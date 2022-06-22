@@ -8,11 +8,14 @@ from ffcv.transforms import RandomHorizontalFlip, Cutout, \
     RandomTranslate, Convert, ToDevice, ToTensor, ToTorchImage
 from ffcv.transforms.common import Squeeze
 
-def create_loader(batch_size, train):
-    CIFAR_MEAN = [125.307, 122.961, 113.8575]
-    CIFAR_STD = [51.5865, 50.847, 51.255]
+CIFAR_MEAN = [125.307, 122.961, 113.8575]
+CIFAR_STD = [51.5865, 50.847, 51.255]
 
-    label_pipeline = [IntDecoder(), ToTensor(), ToDevice('cuda:0'), Squeeze()]
+def create_loader(batch_size, train, gpu=0):
+
+    device = 'cuda:%d' % gpu
+
+    label_pipeline = [IntDecoder(), ToTensor(), ToDevice(device), Squeeze()]
     image_pipeline = [SimpleRGBImageDecoder()]
 
     if train:
@@ -23,7 +26,7 @@ def create_loader(batch_size, train):
         ])
     image_pipeline.extend([
         ToTensor(),
-        ToDevice('cuda:0', non_blocking=True),
+        ToDevice(device, non_blocking=True),
         ToTorchImage(),
         Convert(torch.float16),
         T.Normalize(CIFAR_MEAN, CIFAR_STD),

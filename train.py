@@ -5,7 +5,6 @@ import argparse
 
 from tqdm import tqdm
 import numpy as np
-import matplotlib.pyplot as plt
 
 import torch
 from torch.cuda.amp import GradScaler, autocast
@@ -25,7 +24,7 @@ def evaluate(model, test_loader, save_outputs=False):
     with torch.no_grad(), autocast():
         for batch in test_loader:
             inputs, labels = batch
-            outputs = model(inputs.cuda())
+            outputs = model(inputs)
             if save_outputs:
                 outputs_l.append(outputs)
             pred = outputs.argmax(dim=1)
@@ -38,13 +37,13 @@ def evaluate(model, test_loader, save_outputs=False):
 
 def train(args, verbose=True):
 
-    train_loader = create_loader(args.batch_size, True)
-    test_loader = create_loader(1024, False)
+    train_loader = create_loader(args.batch_size, True, args.gpu)
+    test_loader = create_loader(1024, False, args.gpu)
 
     n_iters = args.epochs * (50000 // args.batch_size)
     lr_schedule = np.interp(np.arange(1+n_iters), [0, n_iters], [1, 0])
 
-    model = create_model().cuda()
+    model = create_model().cuda(args.gpu)
     optimizer = SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_schedule.__getitem__)
     scaler = GradScaler()
@@ -80,7 +79,11 @@ def train(args, verbose=True):
             log['corrects'].append(c)
 
     if args.save_outputs:
-        log['outputs'] = evaluate(model, test_loader, save_outputs=True)['outputs']
+        stats = evaluate(model, test_loader, save_outputs=True)
+        log['correct'] = stats['correct']
+        if verbose:
+            print('correct=%d' % stats['correct'])
+        log['outputs'] = stats['outputs']
 
     os.makedirs('./logs', exist_ok=True)
     log_path = os.path.join('./logs', str(uuid.uuid4())+'.pkl')
@@ -104,6 +107,7 @@ parser.add_argument('--batch_size', type=int, default=512)
 parser.add_argument('--epochs', type=int, default=48)
 parser.add_argument('--save_outputs', type=int, default=1)
 parser.add_argument('--num_runs', type=int, default=1)
+parser.add_argument('--gpu', type=int, default=0)
 if __name__ == '__main__':
     args = parser.parse_args()
     main(args)
