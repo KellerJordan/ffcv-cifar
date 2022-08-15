@@ -21,11 +21,11 @@ def create_model():
         def forward(self, x):
             return x + self.module(x)
 
-    def conv_bn(channels_in, channels_out, kernel_size=3, stride=1, padding=1, groups=1):
+    def conv_bn(channels_in, channels_out, kernel_size=3, stride=1, padding=1):
         return nn.Sequential(
                 nn.Conv2d(channels_in, channels_out,
                           kernel_size=kernel_size, stride=stride, padding=padding,
-                          groups=groups, bias=False),
+                          bias=False),
                 nn.BatchNorm2d(channels_out),
                 nn.ReLU(inplace=True)
         )
