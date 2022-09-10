@@ -1,7 +1,6 @@
 import torch
 import torchvision.transforms as T
 
-from ffcv.fields import IntField, RGBImageField
 from ffcv.fields.decoders import IntDecoder, SimpleRGBImageDecoder
 from ffcv.loader import Loader, OrderOption
 from ffcv.transforms import RandomHorizontalFlip, Cutout, \
