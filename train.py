@@ -40,7 +40,7 @@ def train(args, verbose=True):
     train_loader = create_loader(args.batch_size, True, args.gpu)
     test_loader = create_loader(1024, False, args.gpu)
 
-    n_iters = args.epochs * (50000 // args.batch_size)
+    n_iters = len(train_loader)
     lr_schedule = np.interp(np.arange(1+n_iters), [0, n_iters], [1, 0])
 
     model = create_model().cuda(args.gpu)
