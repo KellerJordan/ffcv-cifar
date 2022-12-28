@@ -38,9 +38,9 @@ def evaluate(model, test_loader, save_outputs=False):
 def train(args, verbose=True):
 
     train_loader = create_loader(args.batch_size, True, args.gpu)
-    test_loader = create_loader(1024, False, args.gpu)
+    test_loader = create_loader(1000, False, args.gpu)
 
-    n_iters = len(train_loader)
+    n_iters = args.epochs*len(train_loader)
     lr_schedule = np.interp(np.arange(1+n_iters), [0, n_iters], [1, 0])
 
     model = create_model().cuda(args.gpu)
@@ -103,7 +103,7 @@ def main(args):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, default=0.5)
-parser.add_argument('--batch_size', type=int, default=512)
+parser.add_argument('--batch_size', type=int, default=500)
 parser.add_argument('--epochs', type=int, default=48)
 parser.add_argument('--save_outputs', type=int, default=1)
 parser.add_argument('--num_runs', type=int, default=1)
