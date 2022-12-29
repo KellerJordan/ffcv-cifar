@@ -49,11 +49,8 @@ def train(args, verbose=True):
     scaler = GradScaler()
     loss_fn = CrossEntropyLoss()
 
-    log = {
-        'args': args.__dict__,
-        'losses': [],
-        'corrects': [],
-    }
+    log = {'args': args.__dict__,
+           'losses': []}
     it = range(args.epochs)
     if verbose:
         it = tqdm(it)
@@ -71,12 +68,6 @@ def train(args, verbose=True):
             scaler.step(optimizer)
             scaler.update()
             scheduler.step()
-
-        if (epoch+1) % 12 == 0:
-            c = evaluate(model, test_loader)['correct']
-            if verbose:
-                it.set_postfix({'correct': c})
-            log['corrects'].append(c)
 
     if args.save_outputs:
         stats = evaluate(model, test_loader, save_outputs=True)
