@@ -37,8 +37,8 @@ def evaluate(model, test_loader, save_outputs=False):
 
 def train(args, verbose=True):
 
-    train_loader = create_loader(args.batch_size, True, args.gpu)
-    test_loader = create_loader(1000, False, args.gpu)
+    train_loader = create_loader(args.train_dset, args.batch_size, args.aug, args.gpu)
+    test_loader = create_loader(args.test_dset, 1000, False, args.gpu)
 
     n_iters = args.epochs*len(train_loader)
     lr_schedule = np.interp(np.arange(1+n_iters), [0, n_iters], [1, 0])
@@ -49,11 +49,8 @@ def train(args, verbose=True):
     scaler = GradScaler()
     loss_fn = CrossEntropyLoss()
 
-    log = {
-        'args': args.__dict__,
-        'losses': [],
-        'corrects': [],
-    }
+    log = {'args': args.__dict__,
+           'losses': []}
     it = range(args.epochs)
     if verbose:
         it = tqdm(it)
@@ -71,12 +68,6 @@ def train(args, verbose=True):
             scaler.step(optimizer)
             scaler.update()
             scheduler.step()
-
-        if (epoch+1) % 12 == 0:
-            c = evaluate(model, test_loader)['correct']
-            if verbose:
-                it.set_postfix({'correct': c})
-            log['corrects'].append(c)
 
     if args.save_outputs:
         stats = evaluate(model, test_loader, save_outputs=True)
@@ -104,7 +95,11 @@ def main(args):
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, default=0.5)
 parser.add_argument('--batch_size', type=int, default=500)
-parser.add_argument('--epochs', type=int, default=48)
+parser.add_argument('--epochs', type=int, default=64)
+parser.add_argument('--train-dset', type=str, default='cifar_train')
+parser.add_argument('--test-dset', type=str, default='cifar_test')
+parser.add_argument('--aug', type=int, default=1)
+
 parser.add_argument('--save_outputs', type=int, default=1)
 parser.add_argument('--num_runs', type=int, default=1)
 parser.add_argument('--gpu', type=int, default=0)

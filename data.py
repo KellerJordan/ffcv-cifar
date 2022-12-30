@@ -10,14 +10,14 @@ from ffcv.transforms.common import Squeeze
 CIFAR_MEAN = [125.307, 122.961, 113.8575]
 CIFAR_STD = [51.5865, 50.847, 51.255]
 
-def create_loader(batch_size, train, gpu=0):
+def create_loader(dset, batch_size, aug, gpu=0):
 
     device = 'cuda:%d' % gpu
 
     label_pipeline = [IntDecoder(), ToTensor(), ToDevice(device), Squeeze()]
     image_pipeline = [SimpleRGBImageDecoder()]
 
-    if train:
+    if aug:
         image_pipeline.extend([
             RandomHorizontalFlip(),
             RandomTranslate(padding=2),
@@ -32,13 +32,12 @@ def create_loader(batch_size, train, gpu=0):
     ])
 
     # Create loaders
-    order_opt = OrderOption.RANDOM if train else OrderOption.SEQUENTIAL
-    name = 'train' if train else 'test'
-    loader = Loader(f'/tmp/cifar_{name}.beton',
+    order_opt = OrderOption.RANDOM if aug else OrderOption.SEQUENTIAL
+    loader = Loader(f'/tmp/{dset}.beton',
                     batch_size=batch_size,
                     num_workers=8,
                     order=order_opt,
-                    drop_last=train,
+                    drop_last=aug,
                     pipelines={'image': image_pipeline,
                                'label': label_pipeline})
     return loader
