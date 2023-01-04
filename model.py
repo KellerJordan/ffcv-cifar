@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-def create_model():
+def create_model(w=1.0):
 
     class Mul(nn.Module):
         def __init__(self, weight):
@@ -31,17 +31,20 @@ def create_model():
         )
 
     NUM_CLASSES = 10
+    w0 = int(w*64)
+    w1 = int(w*128)
+    w2 = int(w*256)
     model = nn.Sequential(
-        conv_bn(3, 64, kernel_size=3, stride=1, padding=1),
-        conv_bn(64, 128, kernel_size=5, stride=2, padding=2),
-        Residual(nn.Sequential(conv_bn(128, 128), conv_bn(128, 128))),
-        conv_bn(128, 256, kernel_size=3, stride=1, padding=1),
+        conv_bn(3, w0, kernel_size=3, stride=1, padding=1),
+        conv_bn(w0, w1, kernel_size=5, stride=2, padding=2),
+        Residual(nn.Sequential(conv_bn(w1, w1), conv_bn(w1, w1))),
+        conv_bn(w1, w2, kernel_size=3, stride=1, padding=1),
         nn.MaxPool2d(2),
-        Residual(nn.Sequential(conv_bn(256, 256), conv_bn(256, 256))),
-        conv_bn(256, 128, kernel_size=3, stride=1, padding=0),
+        Residual(nn.Sequential(conv_bn(w2, w2), conv_bn(w2, w2))),
+        conv_bn(w2, w1, kernel_size=3, stride=1, padding=0),
         nn.AdaptiveMaxPool2d((1, 1)),
         Flatten(),
-        nn.Linear(128, NUM_CLASSES, bias=False),
+        nn.Linear(w1, NUM_CLASSES, bias=False),
         Mul(0.2)
     )
     model = model.to(memory_format=torch.channels_last)

@@ -8,16 +8,20 @@ import train
 
 def get_args_list():
     args_list = []
-    for epochs in [1, 2, 4, 8, 16, 32, 64, 128]:
-        for _ in range(10):
-            args_d = {
-                'lr': 0.5,
-                'batch_size': 512,
-                'epochs': epochs,
-                'save_outputs': 1,
-                'num_runs': 50,
-            }
-            args_list.append(args_d)
+    epochs = 64
+    for _ in range(800):
+        args_d = {
+            'w': 4.0,
+            'lr': 0.5,
+            'batch_size': 500,
+            'epochs': epochs,
+            'train_dset': 'cifar_train',
+            'test_dset': 'cifar_test',
+            'aug': 0,
+            'save_outputs': 1,
+            'num_runs': 50,
+        }
+        args_list.append(args_d)
     random.shuffle(args_list)
     return args_list
 

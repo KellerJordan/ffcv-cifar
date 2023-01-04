@@ -43,7 +43,7 @@ def train(args, verbose=True):
     n_iters = args.epochs*len(train_loader)
     lr_schedule = np.interp(np.arange(1+n_iters), [0, n_iters], [1, 0])
 
-    model = create_model().cuda(args.gpu)
+    model = create_model(args.w).cuda(args.gpu)
     optimizer = SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_schedule.__getitem__)
     scaler = GradScaler()
@@ -99,6 +99,7 @@ parser.add_argument('--epochs', type=int, default=64)
 parser.add_argument('--train-dset', type=str, default='cifar_train')
 parser.add_argument('--test-dset', type=str, default='cifar_test')
 parser.add_argument('--aug', type=int, default=1)
+parser.add_argument('--w', type=float, default=1.0)
 
 parser.add_argument('--save_outputs', type=int, default=1)
 parser.add_argument('--num_runs', type=int, default=1)
